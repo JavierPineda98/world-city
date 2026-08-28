@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mi Ciudad</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #e9ecef;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 40px;
+        }
+
+        #ciudad {
+            width: 700px;
+            height: 450px;
+            margin: 30px auto;
+            background: #8bcf8b;
+            border: 4px solid #333;
+            position: relative;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+   <h1>WORLD CITY</h1>
+
+   <p>Una ciudad construida por todos. Una construcción cada día.</p>
+
+    <div id="ciudad"></div>
+
+    <button onclick="seleccionarConstruccion('🏠')">
+    🏠 Casa
+</button>
+
+<button onclick="seleccionarConstruccion('🌳')">
+    🌳 Árbol
+</button>
+
+<button onclick="seleccionarConstruccion('🏪')">
+    🏪 Tienda
+</button>
+<p id="estado">Puedes construir hoy.</p>
+
+    <script>
+
+       let construccionSeleccionada = null;
+
+const ciudad = document.getElementById("ciudad");
+const estado = document.getElementById("estado");
+
+// Revisar si ya construyó hoy
+const ultimaConstruccion = localStorage.getItem("ultimaConstruccion");
+
+const hoy = new Date().toDateString();
+
+let puedeConstruir = ultimaConstruccion !== hoy;
+
+
+// Cargar construcciones guardadas
+const construccionesGuardadas = JSON.parse(
+    localStorage.getItem("construcciones")
+) || [];
+
+construccionesGuardadas.forEach(construccion => {
+
+    crearConstruccion(
+        construccion.tipo,
+        construccion.x,
+        construccion.y
+    );
+
+});
+
+
+// Mostrar estado inicial
+actualizarEstado();
+
+
+function seleccionarConstruccion(tipo) {
+
+    if (!puedeConstruir) {
+        return;
+    }
+
+    construccionSeleccionada = tipo;
+
+    estado.innerText = "Ahora haz clic en la ciudad para construir.";
+}
+
+
+ciudad.onclick = function(event) {
+
+    if (!puedeConstruir) {
+
+        estado.innerText = "Ya construiste hoy. Vuelve mañana.";
+
+        return;
+    }
+
+    if (construccionSeleccionada === null) {
+
+        estado.innerText = "Primero elige qué quieres construir.";
+
+        return;
+    }
+
+
+    const x = event.offsetX - 20;
+    const y = event.offsetY - 20;
+
+
+    crearConstruccion(
+        construccionSeleccionada,
+        x,
+        y
+    );
+
+
+    // Guardar construcción
+    construccionesGuardadas.push({
+
+        tipo: construccionSeleccionada,
+        x: x,
+        y: y
+
+    });
+
+
+    localStorage.setItem(
+        "construcciones",
+        JSON.stringify(construccionesGuardadas)
+    );
+
+
+    // Registrar que ya construyó hoy
+    localStorage.setItem(
+        "ultimaConstruccion",
+        hoy
+    );
+
+
+    puedeConstruir = false;
+
+    construccionSeleccionada = null;
+
+    actualizarEstado();
+
+};
+
+
+function crearConstruccion(tipo, x, y) {
+
+    const objeto = document.createElement("div");
+
+    objeto.innerHTML = tipo;
+
+    objeto.style.position = "absolute";
+
+    objeto.style.left = x + "px";
+
+    objeto.style.top = y + "px";
+
+    objeto.style.fontSize = "40px";
+
+    ciudad.appendChild(objeto);
+
+}
+
+
+function actualizarEstado() {
+
+    if (puedeConstruir) {
+
+        estado.innerText = "Puedes construir hoy.";
+
+    } else {
+
+        estado.innerText = "Ya construiste hoy. Vuelve mañana.";
+
+    }
+
+}
+
+    </script>
+
+</body>
+</html>
