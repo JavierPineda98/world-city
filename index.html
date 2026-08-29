@@ -104,19 +104,44 @@ let puedeConstruir = ultimaConstruccion !== hoy;
 
 
 // Cargar construcciones guardadas
-const construccionesGuardadas = JSON.parse(
-    localStorage.getItem("construcciones")
-) || [];
 
-construccionesGuardadas.forEach(construccion => {
+async function guardarConstruccionEnSupabase(tipo, x, y) {
 
-    crearConstruccion(
-        construccion.tipo,
-        construccion.x,
-        construccion.y
+    const { data, error } = await supabaseClient
+        .from("construcciones")
+        .insert([
+            {
+                tipo: tipo,
+                x: x,
+                y: y
+            }
+        ])
+        .select();
+
+    if (error) {
+
+        console.error(
+            "Error guardando construcción:",
+            error
+        );
+
+        estado.innerText =
+            "Hubo un error al construir.";
+
+        return;
+    }
+
+    console.log(
+        "Construcción guardada:",
+        data
     );
 
-});
+    crearConstruccion(
+        tipo,
+        x,
+        y
+    );
+}
 
 
 // Mostrar estado inicial
@@ -156,27 +181,11 @@ ciudad.onclick = function(event) {
     const y = event.offsetY - 20;
 
 
-    crearConstruccion(
-        construccionSeleccionada,
-        x,
-        y
-    );
-
-
-    // Guardar construcción
-    construccionesGuardadas.push({
-
-        tipo: construccionSeleccionada,
-        x: x,
-        y: y
-
-    });
-
-
-    localStorage.setItem(
-        "construcciones",
-        JSON.stringify(construccionesGuardadas)
-    );
+    guardarConstruccionEnSupabase(
+    construccionSeleccionada,
+    x,
+    y
+);
 
 
     // Registrar que ya construyó hoy
