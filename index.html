@@ -56,8 +56,40 @@
 </button>
 <p id="estado">Puedes construir hoy.</p>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+const SUPABASE_URL = "https://grhlxchwuxiuvkrytlci.supabase.co/rest/v1/";
 
+const SUPABASE_KEY = "sb_publishable_a9q6-307OM1-G3Lp89j-oQ_EZ7ZsWML";
+
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+async function cargarConstruccionesDesdeSupabase() {
+
+    const { data, error } = await supabaseClient
+        .from("construcciones")
+        .select("*");
+
+    if (error) {
+        console.error("Error cargando construcciones:", error);
+        return;
+    }
+
+    console.log("Construcciones desde Supabase:", data);
+
+    data.forEach(construccion => {
+
+        crearConstruccion(
+            construccion.tipo,
+            construccion.x,
+            construccion.y
+        );
+
+    });
+}
+cargarConstruccionesDesdeSupabase();
        let construccionSeleccionada = null;
 
 const ciudad = document.getElementById("ciudad");
