@@ -155,16 +155,17 @@ let puedeConstruir = ultimaConstruccion !== hoy;
 
 async function guardarConstruccionEnSupabase(tipo, x, y) {
 
-    const { data, error } = await supabaseClient
-        .from("construcciones")
-        .insert([
-            {
-                tipo: tipo,
-                x: x,
-                y: y
-            }
-        ])
-        .select();
+ const { data, error } = await supabaseClient
+    .from("construcciones")
+    .insert([
+        {
+            tipo: tipo,
+            x: x,
+            y: y,
+            user_id: usuarioActual.id
+        }
+    ])
+    .select();
 
     if (error) {
 
