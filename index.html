@@ -40,6 +40,9 @@
    <h1>WORLD CITY</h1>
 
    <p>Una ciudad construida por todos. Una construcción cada día.</p>
+   <p id="contadorConstrucciones">
+    🌎 0 construcciones en el mundo
+</p>
 
     <div id="ciudad"></div>
 
@@ -167,6 +170,19 @@ construccionSeleccionada = null;
 actualizarEstado();
 
     });
+  totalConstrucciones = data.length;
+
+actualizarContador(totalConstrucciones);
+}
+let totalConstrucciones = 0;
+function actualizarContador(cantidad) {
+
+    const contador = document.getElementById(
+        "contadorConstrucciones"
+    );
+
+    contador.innerText =
+        "🌎 " + cantidad + " construcciones en el mundo";
 }
 function activarRealtime() {
 
@@ -188,6 +204,9 @@ function activarRealtime() {
                     nuevaConstruccion.x,
                     nuevaConstruccion.y
                 );
+                totalConstrucciones++;
+
+actualizarContador(totalConstrucciones);
 
                 console.log(
                     "Nueva construcción en tiempo real:",
