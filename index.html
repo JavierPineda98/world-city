@@ -58,6 +58,39 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        async function revisarSiPuedeConstruir() {
+
+    if (!usuarioActual) {
+        puedeConstruir = false;
+        estado.innerText = "No se pudo identificar al usuario.";
+        return;
+    }
+
+    const inicioHoy = new Date();
+    inicioHoy.setUTCHours(0, 0, 0, 0);
+
+    const inicioManana = new Date(inicioHoy);
+    inicioManana.setUTCDate(inicioManana.getUTCDate() + 1);
+
+    const { data, error } = await supabaseClient
+        .from("construcciones")
+        .select("id")
+        .eq("user_id", usuarioActual.id)
+        .gte("created_at", inicioHoy.toISOString())
+        .lt("created_at", inicioManana.toISOString())
+        .limit(1);
+
+    if (error) {
+        console.error("Error revisando construcción diaria:", error);
+        puedeConstruir = false;
+        estado.innerText = "No se pudo comprobar si puedes construir.";
+        return;
+    }
+
+    puedeConstruir = data.length === 0;
+
+    actualizarEstado();
+}
 const SUPABASE_URL = "https://grhlxchwuxiuvkrytlci.supabase.co";
 
 const SUPABASE_KEY = "sb_publishable_a9q6-307OM1-G3Lp89j-oQ_EZ7ZsWML";
@@ -127,6 +160,11 @@ async function cargarConstruccionesDesdeSupabase() {
             construccion.x,
             construccion.y
         );
+        puedeConstruir = false;
+
+construccionSeleccionada = null;
+
+actualizarEstado();
 
     });
 }
@@ -136,6 +174,8 @@ async function iniciarJuego() {
 
     await cargarConstruccionesDesdeSupabase();
 
+    await revisarSiPuedeConstruir();
+
 }
 
 iniciarJuego();       let construccionSeleccionada = null;
@@ -144,11 +184,7 @@ const ciudad = document.getElementById("ciudad");
 const estado = document.getElementById("estado");
 
 // Revisar si ya construyó hoy
-const ultimaConstruccion = localStorage.getItem("ultimaConstruccion");
-
-const hoy = new Date().toDateString();
-
-let puedeConstruir = ultimaConstruccion !== hoy;
+let puedeConstruir = false;
 
 
 // Cargar construcciones guardadas
@@ -169,16 +205,27 @@ async function guardarConstruccionEnSupabase(tipo, x, y) {
 
     if (error) {
 
-        console.error(
-            "Error guardando construcción:",
-            error
-        );
+    console.error(
+        "Error guardando construcción:",
+        error
+    );
+
+    if (error.code === "23505") {
+
+        estado.innerText =
+            "Ya construiste hoy. Vuelve mañana.";
+
+        puedeConstruir = false;
+
+    } else {
 
         estado.innerText =
             "Hubo un error al construir.";
 
-        return;
     }
+
+    return;
+}
 
     console.log(
         "Construcción guardada:",
@@ -238,10 +285,7 @@ ciudad.onclick = function(event) {
 
 
     // Registrar que ya construyó hoy
-    localStorage.setItem(
-        "ultimaConstruccion",
-        hoy
-    );
+    
 
 
     puedeConstruir = false;
