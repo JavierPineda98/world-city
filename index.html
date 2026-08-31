@@ -168,6 +168,35 @@ actualizarEstado();
 
     });
 }
+function activarRealtime() {
+
+    supabaseClient
+        .channel("world-city-realtime")
+        .on(
+            "postgres_changes",
+            {
+                event: "INSERT",
+                schema: "public",
+                table: "construcciones"
+            },
+            (payload) => {
+
+                const nuevaConstruccion = payload.new;
+
+                crearConstruccion(
+                    nuevaConstruccion.tipo,
+                    nuevaConstruccion.x,
+                    nuevaConstruccion.y
+                );
+
+                console.log(
+                    "Nueva construcción en tiempo real:",
+                    nuevaConstruccion
+                );
+            }
+        )
+        .subscribe();
+}
 async function iniciarJuego() {
 
     await iniciarUsuario();
@@ -175,6 +204,8 @@ async function iniciarJuego() {
     await cargarConstruccionesDesdeSupabase();
 
     await revisarSiPuedeConstruir();
+
+    activarRealtime();
 
 }
 
@@ -232,11 +263,7 @@ async function guardarConstruccionEnSupabase(tipo, x, y) {
         data
     );
 
-    crearConstruccion(
-        tipo,
-        x,
-        y
-    );
+   
 }
 
 
