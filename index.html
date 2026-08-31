@@ -66,6 +66,47 @@ const supabaseClient = supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
+let usuarioActual = null;
+
+async function iniciarUsuario() {
+
+    // Primero comprobamos si este navegador ya tiene una sesión
+    const { data: sessionData } =
+        await supabaseClient.auth.getSession();
+
+    if (sessionData.session) {
+
+        usuarioActual = sessionData.session.user;
+
+        console.log(
+            "Usuario existente:",
+            usuarioActual.id
+        );
+
+        return;
+    }
+
+    // Si no existe una sesión, creamos un usuario anónimo
+    const { data, error } =
+        await supabaseClient.auth.signInAnonymously();
+
+    if (error) {
+
+        console.error(
+            "Error creando usuario anónimo:",
+            error
+        );
+
+        return;
+    }
+
+    usuarioActual = data.user;
+
+    console.log(
+        "Nuevo usuario anónimo:",
+        usuarioActual.id
+    );
+}
 async function cargarConstruccionesDesdeSupabase() {
 
     const { data, error } = await supabaseClient
@@ -89,8 +130,15 @@ async function cargarConstruccionesDesdeSupabase() {
 
     });
 }
-cargarConstruccionesDesdeSupabase();
-       let construccionSeleccionada = null;
+async function iniciarJuego() {
+
+    await iniciarUsuario();
+
+    await cargarConstruccionesDesdeSupabase();
+
+}
+
+iniciarJuego();       let construccionSeleccionada = null;
 
 const ciudad = document.getElementById("ciudad");
 const estado = document.getElementById("estado");
