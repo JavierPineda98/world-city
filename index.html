@@ -168,15 +168,11 @@ async function cargarConstruccionesDesdeSupabase() {
             construccion.x,
             construccion.y
         );
-        puedeConstruir = false;
+       puedeConstruir = false;
 
 construccionSeleccionada = null;
 
-document
-    .querySelectorAll("button")
-    .forEach(boton => {
-        boton.classList.remove("seleccionado");
-    });
+quitarSeleccionBotones();
 
 actualizarEstado();
 
@@ -295,6 +291,15 @@ async function guardarConstruccionEnSupabase(tipo, x, y) {
 
    
 }
+function quitarSeleccionBotones() {
+
+    document
+        .querySelectorAll("button")
+        .forEach(boton => {
+            boton.classList.remove("seleccionado");
+        });
+
+}
 
 
 // Mostrar estado inicial
@@ -303,10 +308,17 @@ actualizarEstado();
 
 function seleccionarConstruccion(tipo, botonId) {
 
-    if (!puedeConstruir) {
-        estado.innerText = "Ya construiste hoy. Vuelve mañana.";
-        return;
-    }
+   if (!puedeConstruir) {
+
+    construccionSeleccionada = null;
+
+    quitarSeleccionBotones();
+
+    estado.innerText =
+        "Ya construiste hoy. Vuelve mañana.";
+
+    return;
+}
 
     construccionSeleccionada = tipo;
 
@@ -395,6 +407,10 @@ function actualizarEstado() {
     } else {
 
         estado.innerText = "Ya construiste hoy. Vuelve mañana.";
+
+        construccionSeleccionada = null;
+
+        quitarSeleccionBotones();
 
     }
 
