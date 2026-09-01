@@ -7,6 +7,11 @@
     <title>Mi Ciudad</title>
 
     <style>
+        button.seleccionado {
+    transform: scale(1.08);
+    border: 3px solid black;
+    font-weight: bold;
+}
         body {
             margin: 0;
             font-family: Arial, sans-serif;
@@ -46,15 +51,15 @@
 
     <div id="ciudad"></div>
 
-    <button onclick="seleccionarConstruccion('🏠')">
+    <button id="botonCasa" onclick="seleccionarConstruccion('🏠', 'botonCasa')">
     🏠 Casa
 </button>
 
-<button onclick="seleccionarConstruccion('🌳')">
+<button id="botonArbol" onclick="seleccionarConstruccion('🌳', 'botonArbol')">
     🌳 Árbol
 </button>
 
-<button onclick="seleccionarConstruccion('🏪')">
+<button id="botonTienda" onclick="seleccionarConstruccion('🏪', 'botonTienda')">
     🏪 Tienda
 </button>
 <p id="estado">Puedes construir hoy.</p>
@@ -166,6 +171,12 @@ async function cargarConstruccionesDesdeSupabase() {
         puedeConstruir = false;
 
 construccionSeleccionada = null;
+
+document
+    .querySelectorAll("button")
+    .forEach(boton => {
+        boton.classList.remove("seleccionado");
+    });
 
 actualizarEstado();
 
@@ -290,15 +301,28 @@ async function guardarConstruccionEnSupabase(tipo, x, y) {
 actualizarEstado();
 
 
-function seleccionarConstruccion(tipo) {
+function seleccionarConstruccion(tipo, botonId) {
 
     if (!puedeConstruir) {
+        estado.innerText = "Ya construiste hoy. Vuelve mañana.";
         return;
     }
 
     construccionSeleccionada = tipo;
 
-    estado.innerText = "Ahora haz clic en la ciudad para construir.";
+    document
+        .querySelectorAll("button")
+        .forEach(boton => {
+            boton.classList.remove("seleccionado");
+        });
+
+    const botonSeleccionado =
+        document.getElementById(botonId);
+
+    botonSeleccionado.classList.add("seleccionado");
+
+    estado.innerText =
+        "Seleccionaste " + tipo + ". Ahora elige dónde colocarlo.";
 }
 
 
