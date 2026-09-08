@@ -498,6 +498,53 @@ function seleccionarConstruccion(tipo, botonId) {
         "Seleccionaste " + tipo + ". Ahora elige dónde colocarlo.";
 }
 
+function construccionPermitidaEnZona(tipo, zona) {
+
+    if (tipo === "🏠") {
+        return zona === "residencial";
+    }
+
+    if (tipo === "🏪") {
+        return zona === "comercial";
+    }
+
+    if (tipo === "🌳") {
+        return zona === "residencial" || zona === "parque";
+    }
+
+    return false;
+}
+
+function obtenerZona(columna, fila) {
+
+    // Calles
+    if (columna === 6 || fila === 4) {
+        return "calle";
+    }
+
+    // Arriba izquierda
+    if (columna <= 5 && fila <= 3) {
+        return "residencial";
+    }
+
+    // Arriba derecha
+    if (columna >= 7 && fila <= 3) {
+        return "comercial";
+    }
+
+    // Abajo izquierda
+    if (columna <= 5 && fila >= 5) {
+        return "parque";
+    }
+
+    // Abajo derecha
+    if (columna >= 7 && fila >= 5) {
+        return "residencial";
+    }
+
+    return "desconocida";
+}
+
 
 ciudad.onclick = async function(event) {
 
@@ -525,11 +572,37 @@ const posicionY = event.clientY - rect.top;
 
 const columna = Math.floor(posicionX / tamanoCelda);
 const fila = Math.floor(posicionY / tamanoCelda);
+const zona = obtenerZona(columna, fila);
 
-if (columna === 6 || fila === 4) {
+if (zona === "calle") {
 
     estado.innerText =
         "No puedes construir sobre una calle.";
+
+    return;
+}
+
+if (!construccionPermitidaEnZona(
+    construccionSeleccionada,
+    zona
+)) {
+
+    if (construccionSeleccionada === "🏠") {
+
+        estado.innerText =
+            "Las casas solo pueden construirse en zonas residenciales.";
+
+    } else if (construccionSeleccionada === "🏪") {
+
+        estado.innerText =
+            "Las tiendas solo pueden construirse en la zona comercial.";
+
+    } else if (construccionSeleccionada === "🌳") {
+
+        estado.innerText =
+            "Los árboles solo pueden colocarse en parques o zonas residenciales.";
+
+    }
 
     return;
 }
