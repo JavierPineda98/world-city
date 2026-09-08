@@ -7,6 +7,35 @@
     <title>Mi Ciudad</title>
 
     <style>
+        .distrito {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.35;
+}
+
+.distrito-residencial {
+    background: #b8e6b8;
+}
+
+.distrito-comercial {
+    background: #f3df9b;
+}
+
+.distrito-parque {
+    background: #8fd19e;
+}
+
+.etiqueta-distrito {
+    position: absolute;
+    z-index: 2;
+    font-size: 14px;
+    font-weight: bold;
+    background: rgba(255,255,255,0.75);
+    padding: 3px 6px;
+    border-radius: 4px;
+    pointer-events: none;
+}
         .calle {
     position: absolute;
     background: #666;
@@ -105,6 +134,69 @@
     calleHorizontal.style.height = "50px";
 
     ciudad.appendChild(calleHorizontal);
+}
+function crearDistritos() {
+
+    const distritos = [
+        {
+            clase: "distrito distrito-residencial",
+            nombre: "Residencial",
+            left: 0,
+            top: 0,
+            width: 300,
+            height: 200
+        },
+        {
+            clase: "distrito distrito-comercial",
+            nombre: "Comercial",
+            left: 350,
+            top: 0,
+            width: 350,
+            height: 200
+        },
+        {
+            clase: "distrito distrito-parque",
+            nombre: "Parque",
+            left: 0,
+            top: 250,
+            width: 300,
+            height: 200
+        },
+        {
+            clase: "distrito distrito-residencial",
+            nombre: "Residencial",
+            left: 350,
+            top: 250,
+            width: 350,
+            height: 200
+        }
+    ];
+
+    distritos.forEach(distrito => {
+
+        const zona = document.createElement("div");
+
+        zona.className = distrito.clase;
+
+        zona.style.left = distrito.left + "px";
+        zona.style.top = distrito.top + "px";
+        zona.style.width = distrito.width + "px";
+        zona.style.height = distrito.height + "px";
+
+        ciudad.appendChild(zona);
+
+
+        const etiqueta = document.createElement("div");
+
+        etiqueta.className = "etiqueta-distrito";
+
+        etiqueta.innerText = distrito.nombre;
+
+        etiqueta.style.left = (distrito.left + 10) + "px";
+        etiqueta.style.top = (distrito.top + 10) + "px";
+
+        ciudad.appendChild(etiqueta);
+    });
 }
         async function revisarSiPuedeConstruir() {
 
@@ -261,13 +353,15 @@ async function iniciarJuego() {
 
     await iniciarUsuario();
 
-    crearCalles();
+crearDistritos();
 
-    await cargarConstruccionesDesdeSupabase();
+crearCalles();
 
-    await revisarSiPuedeConstruir();
+await cargarConstruccionesDesdeSupabase();
 
-    activarRealtime();
+await revisarSiPuedeConstruir();
+
+activarRealtime();
 
 }
 
