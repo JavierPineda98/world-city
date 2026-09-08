@@ -7,6 +7,15 @@
     <title>Mi Ciudad</title>
 
     <style>
+        #leyenda {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+#leyenda span {
+    margin: 0 10px;
+}
+
         .distrito {
     position: absolute;
     z-index: 0;
@@ -81,6 +90,23 @@
             font-size: 18px;
             cursor: pointer;
         }
+       #selectorParcela {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border: 3px solid black;
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 3;
+    display: none;
+    background: rgba(255,255,255,0.08);
+}
+#infoParcela {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
     </style>
 </head>
 
@@ -107,6 +133,17 @@
     🏪 Tienda
 </button>
 <p id="estado">Puedes construir hoy.</p>
+
+<div id="leyenda">
+    <span>🏠 Residencial</span>
+    <span>🏪 Comercial</span>
+    <span>🌳 Parque</span>
+    <span>⬛ Calle</span>
+</div>
+
+<p id="infoParcela">
+    Mueve el mouse sobre una parcela.
+</p>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -299,7 +336,22 @@ async function cargarConstruccionesDesdeSupabase() {
             construccion.tipo,
             construccion.x,
             construccion.y
+ 
         );
+        if (
+    construccion.columna !== null &&
+    construccion.fila !== null
+) {
+
+    parcelasOcupadas.add(
+        construccion.columna + "," + construccion.fila
+    );
+
+    infoParcelas.set(
+    construccion.columna + "," + construccion.fila,
+    construccion.tipo
+);
+}
 
     });
 
@@ -307,6 +359,10 @@ async function cargarConstruccionesDesdeSupabase() {
 
     actualizarContador(totalConstrucciones);
 }
+const parcelasOcupadas = new Set();
+
+const infoParcelas = new Map();
+
 let totalConstrucciones = 0;
 function actualizarContador(cantidad) {
 
@@ -332,11 +388,21 @@ function activarRealtime() {
 
                 const nuevaConstruccion = payload.new;
 
-                crearConstruccion(
-                    nuevaConstruccion.tipo,
-                    nuevaConstruccion.x,
-                    nuevaConstruccion.y
-                );
+const clave =
+    nuevaConstruccion.columna + "," + nuevaConstruccion.fila;
+
+parcelasOcupadas.add(clave);
+
+infoParcelas.set(
+    clave,
+    nuevaConstruccion.tipo
+);
+
+crearConstruccion(
+    nuevaConstruccion.tipo,
+    nuevaConstruccion.x,
+    nuevaConstruccion.y
+);
                 totalConstrucciones++;
 
 actualizarContador(totalConstrucciones);
@@ -369,6 +435,12 @@ iniciarJuego();       let construccionSeleccionada = null;
 
 const ciudad = document.getElementById("ciudad");
 const estado = document.getElementById("estado");
+
+const selectorParcela = document.createElement("div");
+
+selectorParcela.id = "selectorParcela";
+
+ciudad.appendChild(selectorParcela);
 
 // Revisar si ya construyó hoy
 let puedeConstruir = false;
@@ -674,6 +746,119 @@ function actualizarEstado() {
     }
 
 }
+
+ciudad.addEventListener("mousemove", function(event) {
+
+    const tamanoCelda = 50;
+
+    const rect = ciudad.getBoundingClientRect();
+
+    const posicionX = event.clientX - rect.left;
+    const posicionY = event.clientY - rect.top;
+
+    const columna = Math.floor(posicionX / tamanoCelda);
+    const fila = Math.floor(posicionY / tamanoCelda);
+
+    const zona = obtenerZona(columna, fila);
+
+const claveParcela = columna + "," + fila;
+
+const estaOcupada = parcelasOcupadas.has(claveParcela);
+
+const infoParcela =
+    document.getElementById("infoParcela");
+
+const contenido =
+    infoParcelas.get(claveParcela);
+
+    if (estaOcupada) {
+
+    let nombreConstruccion = "Construcción";
+
+    if (contenido === "🏠") {
+        nombreConstruccion = "Casa";
+    }
+
+    if (contenido === "🌳") {
+        nombreConstruccion = "Árbol";
+    }
+
+    if (contenido === "🏪") {
+        nombreConstruccion = "Tienda";
+    }
+
+    infoParcela.innerText =
+        "Parcela ocupada · " +
+        nombreConstruccion +
+        " " +
+        contenido;
+
+} else {
+
+    if (zona === "residencial") {
+
+        infoParcela.innerText =
+            "Zona residencial · Puedes construir 🏠 Casa o 🌳 Árbol";
+
+    } else if (zona === "comercial") {
+
+        infoParcela.innerText =
+            "Zona comercial · Puedes construir 🏪 Tienda";
+
+    } else if (zona === "parque") {
+
+        infoParcela.innerText =
+            "Parque · Puedes construir 🌳 Árbol";
+
+    } else if (zona === "calle") {
+
+        infoParcela.innerText =
+            "Calle · No se puede construir";
+
+    }
+}
+
+if (
+    construccionSeleccionada !== null &&
+    construccionPermitidaEnZona(
+        construccionSeleccionada,
+        zona
+    ) &&
+    !estaOcupada
+) {
+
+    selectorParcela.style.border =
+        "3px solid green";
+
+    selectorParcela.style.background =
+        "rgba(0, 255, 0, 0.12)";
+
+} else {
+
+    selectorParcela.style.border =
+        "3px solid red";
+
+    selectorParcela.style.background =
+        "rgba(255, 0, 0, 0.12)";
+}
+
+    selectorParcela.style.left =
+        (columna * tamanoCelda) + "px";
+
+    selectorParcela.style.top =
+        (fila * tamanoCelda) + "px";
+
+    selectorParcela.style.display = "block";
+});
+
+ciudad.addEventListener("mouseleave", function() {
+
+    document.getElementById("infoParcela").innerText =
+    "Mueve el mouse sobre una parcela.";
+
+    selectorParcela.style.display = "none";
+
+});
 
     </script>
 
