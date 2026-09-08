@@ -117,12 +117,18 @@
     font-weight: bold;
 }
 
+#estadoCiudad {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
     </style>
 </head>
 
 <body>
 
-   <h1>WORLD CITY</h1>
+   <h1>JEW CITY</h1>
 
    <p>Una ciudad construida por todos. Una construcción cada día.</p>
    <p id="contadorConstrucciones">
@@ -134,6 +140,10 @@
     <span id="comercio">🏪 Comercio: 0</span>
     <span id="naturaleza">🌳 Naturaleza: 0</span>
 </div>
+
+<p id="estadoCiudad">
+    Estado de la ciudad: calculando...
+</p>
 
     <div id="ciudad"></div>
 
@@ -390,6 +400,7 @@ if (construccion.tipo === "🌳") {
 
     actualizarContador(totalConstrucciones);
     actualizarEstadisticas();
+    actualizarEstadoCiudad();
 
 }
 const parcelasOcupadas = new Set();
@@ -455,6 +466,7 @@ crearConstruccion(
 
 actualizarContador(totalConstrucciones);
 actualizarEstadisticas();
+actualizarEstadoCiudad();
 
                 console.log(
                     "Nueva construcción en tiempo real:",
@@ -919,6 +931,58 @@ function actualizarEstadisticas() {
 
     document.getElementById("naturaleza").innerText =
         "🌳 Naturaleza: " + naturaleza;
+}
+
+function actualizarEstadoCiudad() {
+
+    const estadoCiudad =
+        document.getElementById("estadoCiudad");
+
+    if (
+        poblacion === 0 &&
+        comercio === 0 &&
+        naturaleza === 0
+    ) {
+
+        estadoCiudad.innerText =
+            "Estado de la ciudad: 🌱 Ciudad naciente";
+
+        return;
+    }
+
+    if (
+        poblacion > comercio * 3 &&
+        poblacion > naturaleza * 3
+    ) {
+
+        estadoCiudad.innerText =
+            "Estado de la ciudad: ⚠️ Crecimiento desequilibrado";
+
+        return;
+    }
+
+    if (
+        comercio > poblacion * 2
+    ) {
+
+        estadoCiudad.innerText =
+            "Estado de la ciudad: 🏪 Demasiado comercio";
+
+        return;
+    }
+
+    if (
+        naturaleza < poblacion / 3
+    ) {
+
+        estadoCiudad.innerText =
+            "Estado de la ciudad: 🌳 Necesitamos más naturaleza";
+
+        return;
+    }
+
+    estadoCiudad.innerText =
+        "Estado de la ciudad: 🌟 Ciudad saludable";
 }
 
     </script>
