@@ -7,6 +7,12 @@
     <title>Mi Ciudad</title>
 
     <style>
+        .calle {
+    position: absolute;
+    background: #666;
+    z-index: 0;
+    pointer-events: none;
+}
         button.seleccionado {
     transform: scale(1.08);
     border: 3px solid black;
@@ -75,6 +81,31 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        function crearCalles() {
+
+    const calleVertical = document.createElement("div");
+
+    calleVertical.className = "calle";
+
+    calleVertical.style.left = "300px";
+    calleVertical.style.top = "0px";
+    calleVertical.style.width = "50px";
+    calleVertical.style.height = "450px";
+
+    ciudad.appendChild(calleVertical);
+
+
+    const calleHorizontal = document.createElement("div");
+
+    calleHorizontal.className = "calle";
+
+    calleHorizontal.style.left = "0px";
+    calleHorizontal.style.top = "200px";
+    calleHorizontal.style.width = "700px";
+    calleHorizontal.style.height = "50px";
+
+    ciudad.appendChild(calleHorizontal);
+}
         async function revisarSiPuedeConstruir() {
 
     if (!usuarioActual) {
@@ -177,18 +208,12 @@ async function cargarConstruccionesDesdeSupabase() {
             construccion.x,
             construccion.y
         );
-       puedeConstruir = false;
-
-construccionSeleccionada = null;
-
-quitarSeleccionBotones();
-
-actualizarEstado();
 
     });
-  totalConstrucciones = data.length;
 
-actualizarContador(totalConstrucciones);
+    totalConstrucciones = data.length;
+
+    actualizarContador(totalConstrucciones);
 }
 let totalConstrucciones = 0;
 function actualizarContador(cantidad) {
@@ -235,6 +260,8 @@ actualizarContador(totalConstrucciones);
 async function iniciarJuego() {
 
     await iniciarUsuario();
+
+    crearCalles();
 
     await cargarConstruccionesDesdeSupabase();
 
@@ -321,6 +348,13 @@ async function guardarConstruccionEnSupabase(tipo, x, y, columna, fila) {
         "Construcción guardada:",
         data
     );
+    puedeConstruir = false;
+
+construccionSeleccionada = null;
+
+quitarSeleccionBotones();
+
+actualizarEstado();
 
    
 }
@@ -371,7 +405,7 @@ function seleccionarConstruccion(tipo, botonId) {
 }
 
 
-ciudad.onclick = function(event) {
+ciudad.onclick = async function(event) {
 
     if (!puedeConstruir) {
 
@@ -390,11 +424,31 @@ ciudad.onclick = function(event) {
 
     const tamanoCelda = 50;
 
-const columna = Math.floor(event.offsetX / tamanoCelda);
-const fila = Math.floor(event.offsetY / tamanoCelda);
+const rect = ciudad.getBoundingClientRect();
+
+const posicionX = event.clientX - rect.left;
+const posicionY = event.clientY - rect.top;
+
+const columna = Math.floor(posicionX / tamanoCelda);
+const fila = Math.floor(posicionY / tamanoCelda);
+
+if (columna === 6 || fila === 4) {
+
+    estado.innerText =
+        "No puedes construir sobre una calle.";
+
+    return;
+}
 
 const x = columna * tamanoCelda + 5;
 const y = fila * tamanoCelda + 5;
+await guardarConstruccionEnSupabase(
+    construccionSeleccionada,
+    x,
+    y,
+    columna,
+    fila
+);
 
     guardarConstruccionEnSupabase(
     construccionSeleccionada,
@@ -408,11 +462,7 @@ const y = fila * tamanoCelda + 5;
     
 
 
-    puedeConstruir = false;
-
-    construccionSeleccionada = null;
-
-    actualizarEstado();
+    
 
 };
 
@@ -430,6 +480,10 @@ function crearConstruccion(tipo, x, y) {
     objeto.style.top = y + "px";
 
     objeto.style.fontSize = "40px";
+    
+    objeto.style.pointerEvents = "none";
+
+    objeto.style.zIndex = "1";
 
     ciudad.appendChild(objeto);
 
