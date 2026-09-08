@@ -107,6 +107,16 @@
     font-weight: bold;
 }
 
+#estadisticas {
+    margin: 10px 0 20px 0;
+    font-size: 16px;
+}
+
+#estadisticas span {
+    margin: 0 12px;
+    font-weight: bold;
+}
+
     </style>
 </head>
 
@@ -118,6 +128,12 @@
    <p id="contadorConstrucciones">
     🌎 0 construcciones en el mundo
 </p>
+
+<div id="estadisticas">
+    <span id="poblacion">👥 Población: 0</span>
+    <span id="comercio">🏪 Comercio: 0</span>
+    <span id="naturaleza">🌳 Naturaleza: 0</span>
+</div>
 
     <div id="ciudad"></div>
 
@@ -329,9 +345,24 @@ async function cargarConstruccionesDesdeSupabase() {
     }
 
     console.log("Construcciones desde Supabase:", data);
+    
+poblacion = 0;
+comercio = 0;
+naturaleza = 0;
 
     data.forEach(construccion => {
 
+        if (construccion.tipo === "🏠") {
+    poblacion++;
+}
+
+if (construccion.tipo === "🏪") {
+    comercio++;
+}
+
+if (construccion.tipo === "🌳") {
+    naturaleza++;
+}
         crearConstruccion(
             construccion.tipo,
             construccion.x,
@@ -358,12 +389,17 @@ async function cargarConstruccionesDesdeSupabase() {
     totalConstrucciones = data.length;
 
     actualizarContador(totalConstrucciones);
+    actualizarEstadisticas();
+
 }
 const parcelasOcupadas = new Set();
 
 const infoParcelas = new Map();
 
 let totalConstrucciones = 0;
+let poblacion = 0;
+let comercio = 0;
+let naturaleza = 0;
 function actualizarContador(cantidad) {
 
     const contador = document.getElementById(
@@ -388,6 +424,18 @@ function activarRealtime() {
 
                 const nuevaConstruccion = payload.new;
 
+            if (nuevaConstruccion.tipo === "🏠") {
+    poblacion++;
+}
+
+if (nuevaConstruccion.tipo === "🏪") {
+    comercio++;
+}
+
+if (nuevaConstruccion.tipo === "🌳") {
+    naturaleza++;
+}
+
 const clave =
     nuevaConstruccion.columna + "," + nuevaConstruccion.fila;
 
@@ -406,6 +454,7 @@ crearConstruccion(
                 totalConstrucciones++;
 
 actualizarContador(totalConstrucciones);
+actualizarEstadisticas();
 
                 console.log(
                     "Nueva construcción en tiempo real:",
@@ -859,6 +908,18 @@ ciudad.addEventListener("mouseleave", function() {
     selectorParcela.style.display = "none";
 
 });
+
+function actualizarEstadisticas() {
+
+    document.getElementById("poblacion").innerText =
+        "👥 Población: " + poblacion;
+
+    document.getElementById("comercio").innerText =
+        "🏪 Comercio: " + comercio;
+
+    document.getElementById("naturaleza").innerText =
+        "🌳 Naturaleza: " + naturaleza;
+}
 
     </script>
 
