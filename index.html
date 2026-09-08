@@ -255,26 +255,49 @@ let puedeConstruir = false;
 
 // Cargar construcciones guardadas
 
-async function guardarConstruccionEnSupabase(tipo, x, y) {
+async function guardarConstruccionEnSupabase(tipo, x, y, columna, fila) {
 
  const { data, error } = await supabaseClient
     .from("construcciones")
     .insert([
         {
-            tipo: tipo,
-            x: x,
-            y: y,
-            user_id: usuarioActual.id
-        }
+    tipo: tipo,
+    x: x,
+    y: y,
+    user_id: usuarioActual.id,
+    columna: columna,
+    fila: fila
+}
     ])
     .select();
 
-    if (error) {
+   if (error) {
 
     console.error(
         "Error guardando construcción:",
         error
     );
+
+    const mensajeError = (
+        error.message +
+        " " +
+        (error.details || "")
+    ).toLowerCase();
+
+    if (
+        error.code === "23505" &&
+        (
+            mensajeError.includes("una_construccion_por_parcela") ||
+            mensajeError.includes("columna") ||
+            mensajeError.includes("fila")
+        )
+    ) {
+
+        estado.innerText =
+            "Esa parcela ya está ocupada. Elige otra.";
+
+        return;
+    }
 
     if (error.code === "23505") {
 
@@ -283,12 +306,13 @@ async function guardarConstruccionEnSupabase(tipo, x, y) {
 
         puedeConstruir = false;
 
-    } else {
+        quitarSeleccionBotones();
 
-        estado.innerText =
-            "Hubo un error al construir.";
-
+        return;
     }
+
+    estado.innerText =
+        "Hubo un error al construir.";
 
     return;
 }
@@ -375,9 +399,10 @@ const y = fila * tamanoCelda + 5;
     guardarConstruccionEnSupabase(
     construccionSeleccionada,
     x,
-    y
+    y,
+    columna,
+    fila
 );
-
 
     // Registrar que ya construyó hoy
     
