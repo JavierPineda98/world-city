@@ -123,6 +123,41 @@
     margin-bottom: 20px;
 }
 
+#estadoCiudad {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 15px 0 20px 0;
+}
+
+#objetivoCiudad {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 10px 0 20px 0;
+}
+
+#contenedorProgreso {
+    width: 80%;
+    max-width: 450px;
+    height: 18px;
+    margin: 10px auto 5px auto;
+    background: #d6d6d6;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#barraProgreso {
+    width: 0%;
+    height: 100%;
+    background: #4caf50;
+    transition: width 0.4s ease;
+}
+
+#textoProgreso {
+    margin-top: 5px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
     </style>
 </head>
 
@@ -140,6 +175,22 @@
     <span id="comercio">🏪 Comercio: 0</span>
     <span id="naturaleza">🌳 Naturaleza: 0</span>
 </div>
+
+<p id="estadoCiudad">
+    🌎 Analizando WORLD CITY...
+</p>
+
+<p id="objetivoCiudad">
+    🎯 Calculando objetivo colectivo...
+</p>
+
+<div id="contenedorProgreso">
+    <div id="barraProgreso"></div>
+</div>
+
+<p id="textoProgreso">
+    0 / 0
+</p>
 
 <p id="estadoCiudad">
     Estado de la ciudad: calculando...
@@ -401,6 +452,7 @@ if (construccion.tipo === "🌳") {
     actualizarContador(totalConstrucciones);
     actualizarEstadisticas();
     actualizarEstadoCiudad();
+    actualizarObjetivoCiudad();
 
 }
 const parcelasOcupadas = new Set();
@@ -467,6 +519,7 @@ crearConstruccion(
 actualizarContador(totalConstrucciones);
 actualizarEstadisticas();
 actualizarEstadoCiudad();
+actualizarObjetivoCiudad();
 
                 console.log(
                     "Nueva construcción en tiempo real:",
@@ -983,6 +1036,182 @@ function actualizarEstadoCiudad() {
 
     estadoCiudad.innerText =
         "Estado de la ciudad: 🌟 Ciudad saludable";
+}
+
+function actualizarEstadoCiudad() {
+
+    const estadoCiudad =
+        document.getElementById("estadoCiudad");
+
+    if (
+        poblacion === 0 &&
+        comercio === 0 &&
+        naturaleza === 0
+    ) {
+
+        estadoCiudad.innerText =
+            "🌱 WORLD CITY acaba de comenzar.";
+
+        return;
+    }
+
+
+    if (naturaleza < poblacion / 3) {
+
+        estadoCiudad.innerText =
+            "🌳 WORLD CITY necesita más naturaleza.";
+
+        return;
+    }
+
+
+    if (
+        poblacion > 0 &&
+        comercio < poblacion / 3
+    ) {
+
+        estadoCiudad.innerText =
+            "🏪 WORLD CITY necesita más comercio.";
+
+        return;
+    }
+
+
+    if (
+        naturaleza > poblacion * 2 &&
+        poblacion < 3
+    ) {
+
+        estadoCiudad.innerText =
+            "🏠 WORLD CITY necesita más hogares.";
+
+        return;
+    }
+
+
+    estadoCiudad.innerText =
+        "🌟 WORLD CITY está creciendo de forma equilibrada.";
+}
+
+function actualizarObjetivoCiudad() {
+
+    const objetivoCiudad =
+        document.getElementById("objetivoCiudad");
+
+    const naturalezaNecesaria =
+        Math.ceil(poblacion / 3);
+
+    const comercioNecesario =
+        Math.ceil(poblacion / 3);
+
+
+    // Necesitamos naturaleza
+    if (naturaleza < naturalezaNecesaria) {
+
+        const faltan =
+            naturalezaNecesaria - naturaleza;
+
+        objetivoCiudad.innerText =
+            "🎯 Objetivo colectivo: necesitamos " +
+            faltan +
+            (faltan === 1
+                ? " árbol más 🌳"
+                : " árboles más 🌳");
+
+        actualizarBarraProgreso(
+            naturaleza,
+            naturalezaNecesaria
+        );
+
+        return;
+    }
+
+
+    // Necesitamos comercio
+    if (comercio < comercioNecesario) {
+
+        const faltan =
+            comercioNecesario - comercio;
+
+        objetivoCiudad.innerText =
+            "🎯 Objetivo colectivo: necesitamos " +
+            faltan +
+            (faltan === 1
+                ? " tienda más 🏪"
+                : " tiendas más 🏪");
+
+        actualizarBarraProgreso(
+            comercio,
+            comercioNecesario
+        );
+
+        return;
+    }
+
+
+    // Necesitamos población inicial
+    if (poblacion < 3) {
+
+        const objetivoPoblacion = 3;
+
+        const faltan =
+            objetivoPoblacion - poblacion;
+
+        objetivoCiudad.innerText =
+            "🎯 Objetivo colectivo: necesitamos " +
+            faltan +
+            (faltan === 1
+                ? " hogar más 🏠"
+                : " hogares más 🏠");
+
+        actualizarBarraProgreso(
+            poblacion,
+            objetivoPoblacion
+        );
+
+        return;
+    }
+
+
+    // Todo equilibrado
+    objetivoCiudad.innerText =
+        "🎉 Objetivo cumplido: WORLD CITY está equilibrada.";
+
+    actualizarBarraProgreso(
+        1,
+        1
+    );
+}
+
+function actualizarBarraProgreso(actual, objetivo) {
+
+    const barra =
+        document.getElementById("barraProgreso");
+
+    const texto =
+        document.getElementById("textoProgreso");
+
+    if (objetivo <= 0) {
+
+        barra.style.width = "100%";
+
+        texto.innerText =
+            "Objetivo cumplido";
+
+        return;
+    }
+
+    const porcentaje =
+        Math.min(
+            (actual / objetivo) * 100,
+            100
+        );
+
+    barra.style.width =
+        porcentaje + "%";
+
+    texto.innerText =
+        actual + " / " + objetivo;
 }
 
     </script>
